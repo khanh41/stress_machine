@@ -9,6 +9,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.preprocessing import MinMaxScaler,StandardScaler
 from sklearn.svm import SVC
+import pickle
 from sklearn.externals import joblib
 
 def root_directory():
@@ -37,7 +38,7 @@ def train_model():
     classifiers = [
                     #MultinomialNB(),
                     #SVC(C=20, kernel='rbf'),
-                    RandomForestClassifier()
+                    ('rdf',RandomForestClassifier())
                  ]
     for clf in classifiers:
         count_time = time.time()
@@ -72,7 +73,8 @@ def train_model():
         print("time: ",count_time)
         print()
         print()
-        joblib.dump(pipeline, 'model_stress.pkl')
+        pickle.dump(pipeline,open('model_stress.pkl','wb'))
+        #joblib.dump(pipeline, 'model_stress.pkl')
         print("done")
      
 if __name__ == '__main__':

@@ -54,6 +54,7 @@ class HeartRate(Resource):
         # return {'message': 'Success', 'data': ''}, 200
 
     def post(self):
+        count_time=time.time()
         parser = reqparse.RequestParser()
 
         parser.add_argument('date', required=True)
@@ -63,8 +64,7 @@ class HeartRate(Resource):
         args = parser.parse_args()
         print(args['data'])
         print(args['time'])
-        count_time=time.time()
-        predict((args['data'].split(",")))
+        predict((args['data'].split(",")),args['time'])
         print(time.time()-count_time)
         return {'message': 'ok', 'data':'success'}, 200
 
@@ -85,7 +85,7 @@ def root_directory():
     current_path = os.path.abspath(os.getcwd())
     return os.path.abspath(os.path.join(current_path, os.pardir))
 def data_directory():
-    return os.path.join(root_directory(), "hear_rate - Copy/service/data")
+    return os.path.join(root_directory(), "stress_machine/service/data")
 def load_test_set():
     #Loading a hdf5 file is much much faster
     in_file = os.path.join(data_directory(), "final",  "data_temp.csv")
@@ -135,13 +135,14 @@ def RR_to_features(heart_data):
                 writer.writerows(row_list)  
             return row_list[1]
 
-def predict(list_data):
+def predict(list_data, time_now):
     app = FirebaseApplication('https://smartmachine-ed87d.firebaseio.com/')
     app.put('/','heart_rate',list_data)
     
     list_features = RR_to_features(list_data)
     value_stress = load_test(pipeline, hrv_features)
     list_features.append(value_stress)
+    list_features.insert(0,time_now)
     with open('service/data/data_user.csv','r') as file:
         csv_reader = csv.reader(file)
         listData = list(csv_reader)
@@ -151,6 +152,7 @@ def predict(list_data):
         csv_writer.writerows(listData)
     print(value_stress)
     app = FirebaseApplication('https://smartmachine-ed87d.firebaseio.com/')
+    app.put('/','time_update',time_now)
     if(value_stress=="time pressure"):
         app.put('/','stress_now',"TPS")
     if(value_stress=="interruption"):

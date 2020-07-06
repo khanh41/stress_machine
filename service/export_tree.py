@@ -10,6 +10,10 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.preprocessing import MinMaxScaler,StandardScaler
 from sklearn.svm import SVC
 from sklearn.externals import joblib
+from sklearn.externals.six import StringIO  
+from IPython.display import Image  
+from sklearn.tree import export_graphviz
+import pydotplus
 
 def root_directory():
     current_path = os.path.abspath(__file__)
@@ -29,13 +33,11 @@ def test_model():
     X_test = test[hrv_features]
     y_test = test[target]
     pipeline = joblib.load('model_stress.pkl')
-    y_prediction = pipeline.predict(X_test)
-    print(sklearn.metrics.classification_report(y_test, y_prediction))
+    dot_data= StringIO()
+    print(pipeline.named_steps)
+    export_graphviz(pipeline.named_steps['model'].estimators_[0], out_file=dot_data)
+    graph = pydotplus.graph_from_dot_data(dot_data.getvalue()) 
+    Image(graph.create_png())
     
 if __name__ == '__main__':
     test_model()
-    
-   
-
-
-   
